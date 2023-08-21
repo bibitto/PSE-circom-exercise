@@ -11,5 +11,21 @@ template RangeProof(n) {
     component lt = LessEqThan(n);
     component gt = GreaterEqThan(n);
 
-    // [assignment] insert your code here
+    // if true -> return 1
+    lt.in[0] <== in;
+    lt.in[1] <== range[1];
+
+    // if true -> return 1
+    gt.in[0] <== in;
+    gt.in[1] <== range[0];
+
+    // if true -> return 1
+    out <== lt.out * gt.out;
 }
+
+component main { public [ range ] } = RangeProof(32);
+
+/* INPUT = {
+    "in": "5",
+    "range": ["i", "10"]
+} */
