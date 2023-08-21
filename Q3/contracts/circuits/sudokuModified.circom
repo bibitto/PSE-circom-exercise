@@ -1,13 +1,14 @@
 pragma circom 2.1.4;
 
-include "https://github.com/socathie/circomlib-matrix/blob/master/circuits/matAdd.circom";
-include "https://github.com/socathie/circomlib-matrix/blob/master/circuits/matElemMul.circom";
-include "https://github.com/socathie/circomlib-matrix/blob/master/circuits/matElemSum.circom";
-include "https://github.com/socathie/circomlib-matrix/blob/master/circuits/matElemPow.circom";
-include "circomlib/poseidon.circom";
-include "circomlib/comparators.circom";
+include "../../node_modules/circomlib-matrix/circuits/matAdd.circom";
+include "../../node_modules/circomlib-matrix/circuits/matElemMul.circom";
+include "../../node_modules/circomlib-matrix/circuits/matElemSum.circom";
+include "../../node_modules/circomlib-matrix/circuits/matElemPow.circom";
+include "../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../node_modules/circomlib/circuits/comparators.circom";
 
 //[assignment] include your RangeProof template here
+include "./RangeProof.circom";
 
 template sudoku() {
     signal input puzzle[9][9]; // 0  where blank
@@ -19,13 +20,25 @@ template sudoku() {
     component mul = matElemMul(9,9);
 
     //[assignment] hint: you will need to initialize your RangeProof components here
+    component rangeProof1[9][9];
+    component rangeProof2[9][9];
 
     for (var i=0; i<9; i++) {
         for (var j=0; j<9; j++) {
-            assert(puzzle[i][j]>=0); //[assignment] change assert() to use your created RangeProof instead
-            assert(puzzle[i][j]<=9); //[assignment] change assert() to use your created RangeProof instead
-            assert(solution[i][j]>=0); //[assignment] change assert() to use your created RangeProof instead
-            assert(solution[i][j]<=9); //[assignment] change assert() to use your created RangeProof instead
+            // check puzzle matrix
+            rangeProof1[i][j] = RangeProof(32); // renew componet to avoid "signal already assigned error"
+            rangeProof1[i][j].range[0] <== 0;
+            rangeProof1[i][j].range[1] <== 9;
+            rangeProof1[i][j].in <== puzzle[i][j];
+            rangeProof1[i][j].out === 1;
+
+            // check solution matrix
+            rangeProof2[i][j] = RangeProof(32); // renew componet to avoid "signal already assigned error"
+            rangeProof2[i][j].range[0] <== 0;
+            rangeProof2[i][j].range[1] <== 9;
+            rangeProof2[i][j].in <== solution[i][j];
+            rangeProof2[i][j].out === 1;
+
             mul.a[i][j] <== puzzle[i][j];
             mul.b[i][j] <== solution[i][j];
         }
@@ -39,7 +52,7 @@ template sudoku() {
     // sum up the two inputs to get full solution and square the full solution
 
     component add = matAdd(9,9);
-    
+
     for (var i=0; i<9; i++) {
         for (var j=0; j<9; j++) {
             add.a[i][j] <== puzzle[i][j];
@@ -104,7 +117,7 @@ template sudoku() {
     component hash;
 
     hash = Poseidon(9);
-    
+
     for (var i=0; i<9; i++) {
         poseidon[i] = Poseidon(9);
         for (var j=0; j<9; j++) {

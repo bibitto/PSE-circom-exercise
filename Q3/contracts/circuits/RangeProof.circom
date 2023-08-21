@@ -23,7 +23,7 @@ template RangeProof(n) {
     out <== lt.out * gt.out;
 }
 
-component main { public [ range ] } = RangeProof(32);
+// component main { public [ range ] } = RangeProof(32);
 
 /* INPUT = {
     "in": "5",
